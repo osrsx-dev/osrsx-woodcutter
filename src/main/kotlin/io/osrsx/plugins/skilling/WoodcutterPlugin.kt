@@ -8,7 +8,6 @@ import io.osrsx.config.PluginConfig
 import io.osrsx.config.isFalse
 import io.osrsx.config.isTrue
 import io.osrsx.plugin.HasOverlay
-import io.osrsx.plugin.PluginDescriptor
 import io.osrsx.plugin.ScriptGui
 import io.osrsx.script.Script
 import io.osrsx.script.ScriptDslPlugin
@@ -24,12 +23,6 @@ import io.osrsx.script.ScriptDslPlugin
  * in scene, auto-selects the best tree for your level, honours stop targets and shows an alt-drag stats
  * overlay ([SkillOverlay]).
  */
-@PluginDescriptor(
-    name = "Woodcutter",
-    description = "Chops a configured tree and drops or banks the logs.",
-    author = "osrsx",
-    tags = ["skilling", "woodcutting", "gathering"],
-)
 class WoodcutterPlugin : ScriptDslPlugin(), HasOverlay {
 
     object Config : PluginConfig("woodcutter") {
