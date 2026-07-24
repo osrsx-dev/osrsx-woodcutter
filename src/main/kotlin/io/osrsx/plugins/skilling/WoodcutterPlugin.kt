@@ -1,19 +1,18 @@
 package io.osrsx.plugins.skilling
 
-import io.osrsx.api.ItemRef
-import io.osrsx.api.RestockSpec
-import io.osrsx.api.Skill
-import io.osrsx.api.loadout
-import io.osrsx.config.PluginConfig
-import io.osrsx.config.isFalse
-import io.osrsx.config.isTrue
-import io.osrsx.plugin.HasOverlay
-import io.osrsx.plugin.ScriptGui
+import io.osrsx.api.items.ItemRef
+import io.osrsx.api.economy.RestockSpec
+import io.osrsx.api.player.Skill
+import io.osrsx.api.economy.loadout
+import io.osrsx.plugin.PluginSettings
+import io.osrsx.plugin.isFalse
+import io.osrsx.plugin.isTrue
+import io.osrsx.plugin.Gfx2D
 import io.osrsx.script.Script
-import io.osrsx.script.ScriptDslPlugin
+import io.osrsx.script.ScriptPlugin
 
 /**
- * Woodcutting plugin, authored with the **Script DSL** ([ScriptDslPlugin]) over the shared
+ * Woodcutting plugin, authored with the **Script DSL** ([ScriptPlugin]) over the shared
  * [skillGatherScript] — the loadout-era successor to the old `Gatherer`/`ToolManager` pair. This class only
  * names the tree, the action and the logs, and declares the axe as a **Loadout**; the provision → travel →
  * chop → bank/drop loop lives in the reusable script.
@@ -23,9 +22,9 @@ import io.osrsx.script.ScriptDslPlugin
  * in scene, auto-selects the best tree for your level, honours stop targets and shows an alt-drag stats
  * overlay ([SkillOverlay]).
  */
-class WoodcutterPlugin : ScriptDslPlugin(), HasOverlay {
+class WoodcutterPlugin : ScriptPlugin() {
 
-    object Config : PluginConfig("woodcutter") {
+    object Config : PluginSettings("woodcutter") {
         var auto by boolItem("auto", "Auto-select tree", false,
             "Pick the best tree for your level and navigate to it (ignores Tree/Log below)", section = "Setup")
         // Manual tree/log pickers: confined to real trees / real logs (from the shared tier table), hidden
@@ -62,7 +61,7 @@ class WoodcutterPlugin : ScriptDslPlugin(), HasOverlay {
         var stopAfterMins by intItem("stopAfterMins", "Stop after (min)", 0, 0, 100_000, "Stop after this many minutes (0 = never)", "Stopping")
     }
 
-    override fun config() = Config
+    override fun settings() = Config
 
     private val stats by lazy { SkillStats(ctx, Skill.WOODCUTTING) }
     private val stops by lazy {
@@ -123,14 +122,15 @@ class WoodcutterPlugin : ScriptDslPlugin(), HasOverlay {
         )
     )
 
-    override fun overlayTitle() = "Woodcutting"
-
-    override fun onOverlay(gui: ScriptGui) {
-        val worth = stats.output() * prices.price(logName())
-        SkillOverlay.render(gui, stats, listOf(
-            "Target" to treeName(),
-            (if (Config.bank) "Logs banked" else "Logs dropped")
-                to "${SkillOverlay.commas(stats.output())} (${SkillOverlay.compact(stats.perHour(worth))} gp/hr)",
-        ))
+    override fun onPanel(gfx: Gfx2D) {
+        // A single named overlay window (and nothing at the root) keeps the old "Woodcutting" title.
+        gfx.overlay("Woodcutting") { gui ->
+            val worth = stats.output() * prices.price(logName())
+            SkillOverlay.render(gui, stats, listOf(
+                "Target" to treeName(),
+                (if (Config.bank) "Logs banked" else "Logs dropped")
+                    to "${SkillOverlay.commas(stats.output())} (${SkillOverlay.compact(stats.perHour(worth))} gp/hr)",
+            ))
+        }
     }
 }
