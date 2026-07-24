@@ -9,5 +9,5 @@ osrsxPlugin {
     description = 'Chops the best tree for your level and banks or drops the logs.'
     authors = ['osrsx']
     tags = ['skilling', 'woodcutting', 'gathering']
-    requires 'skilling-lib:1.2.0'
+    requires 'skilling-lib:1.3.0'
 }
